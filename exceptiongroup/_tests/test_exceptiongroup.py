@@ -43,6 +43,52 @@ def test_exception_group_init_when_exceptions_messages_not_equal():
         )
 
 
+def test_exception_group_bool():
+    assert not ExceptionGroup("E", [], [])
+    assert ExceptionGroup("E", [ValueError()], [""])
+
+
+def test_exception_group_contains():
+    err = ValueError()
+    group = ExceptionGroup("E", [err], [""])
+    assert err in group
+    assert ValueError() not in group
+
+
+def test_exception_group_find():
+    err = ValueError()
+    group = ExceptionGroup("E", [err], [""])
+    assert group.find(ValueError) is err
+    assert group.find(TypeError) is None
+
+
+def test_exception_group_find_with_source():
+    err = ValueError()
+    group = ExceptionGroup("E", [err], ["x"])
+    assert group.find(ValueError, with_source=True) == (err, "x")
+    assert group.find(TypeError, with_source=True) is None
+
+
+def test_exception_group_findall():
+    err1 = ValueError()
+    err2 = TypeError()
+    group = ExceptionGroup("E", [err1, err2], ["", ""])
+    assert tuple(group.findall(ValueError)) == (err1,)
+    assert tuple(group.findall((ValueError, TypeError))) == (err1, err2)
+
+
+def test_exception_group_iter():
+    err1 = ValueError()
+    err2 = ValueError()
+    group = ExceptionGroup("E", [err1, err2], ["", ""])
+    assert tuple(group) == ((err1, ""), (err2, ""))
+
+
+def test_exception_group_len():
+    assert len(ExceptionGroup("E", [], [])) == 0
+    assert len(ExceptionGroup("E", [ValueError()], [""])) == 1
+
+
 def test_exception_group_str():
     memberA = ValueError("memberA")
     memberB = ValueError("memberB")

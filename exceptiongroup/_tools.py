@@ -7,7 +7,7 @@ from . import ExceptionGroup
 
 
 def split(exc_type, exc, *, match=None):
-    """ splits the exception into one half (matched) representing all the parts of
+    """splits the exception into one half (matched) representing all the parts of
     the exception that match the predicate, and another half (not matched)
     representing all the parts that don't match.
 

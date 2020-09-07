@@ -94,8 +94,8 @@ class ExceptionGroup(BaseException):
         """
         new = type(self)(
             self.message,
-            self.exceptions + [exception],
-            self.sources + [source],
+            [*self.exceptions, exception],
+            [*self.sources, source],
         )
         self._copy_magic_attrs(new)
         return new
@@ -184,8 +184,8 @@ class ExceptionGroup(BaseException):
             ) from None
         new = type(self)(
             self.message,
-            self.exceptions[:idx] + self.exceptions[idx + 1 :],
-            self.sources[:idx] + self.sources[idx + 1 :],
+            [*self.exceptions[:idx], *self.exceptions[idx + 1 :]],
+            [*self.sources[:idx], *self.sources[idx + 1 :]],
         )
         self._copy_magic_attrs(new)
         return new

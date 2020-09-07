@@ -25,6 +25,20 @@ class ExceptionGroup(BaseException):
       ValueError: if the exceptions and sources lists don't have the same
           length.
 
+    Handle the individual exceptions contained in a group like so::
+
+        try:
+            ...
+        except ExceptionGroup as eg:
+            for exc in eg.findall(ValueError):
+                # Handle exc here
+                eg = eg.remove(exc)
+            exc = eg.find(TypeError)
+            if exc:
+                # Handle that as well
+                eg = eg.remove(exc)
+            eg.maybe_reraise()
+
     """
 
     def __init__(self, message, exceptions, sources):

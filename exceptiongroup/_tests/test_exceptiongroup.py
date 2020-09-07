@@ -44,8 +44,8 @@ def test_exception_group_init_when_exceptions_messages_not_equal():
 
 
 def test_exception_group_bool():
-    assert not ExceptionGroup("E", [], [])
-    assert ExceptionGroup("E", [ValueError()], [""])
+    assert bool(ExceptionGroup("E", [], [])) is False
+    assert bool(ExceptionGroup("E", [ValueError()], [""])) is True
 
 
 def test_exception_group_contains():
@@ -60,6 +60,15 @@ def test_exception_group_find():
     group = ExceptionGroup("E", [err], [""])
     assert group.find(ValueError) is err
     assert group.find(TypeError) is None
+
+
+def test_exception_group_find_callable_predicate():
+    err = ValueError()
+    group = ExceptionGroup("E", [err], [""])
+    predicate1 = lambda e: e is err
+    assert group.find(predicate1) is err
+    predicate2 = lambda _: False
+    assert group.find(predicate2) is None
 
 
 def test_exception_group_find_with_source():
@@ -87,6 +96,45 @@ def test_exception_group_iter():
 def test_exception_group_len():
     assert len(ExceptionGroup("E", [], [])) == 0
     assert len(ExceptionGroup("E", [ValueError()], [""])) == 1
+
+
+def test_exception_group_maybe_reraise_empty():
+    group = ExceptionGroup("E", [], [])
+    group.maybe_reraise()
+
+
+def test_exception_group_maybe_reraise_unwrap():
+    err = ValueError()
+    group = ExceptionGroup("E", [err], [""])
+    try:
+        group.maybe_reraise()
+    except ValueError as caught_err:
+        assert caught_err is err
+    try:
+        group.maybe_reraise(unwrap=False)
+    except ExceptionGroup as caught_err:
+        assert caught_err is group
+
+
+def test_exception_group_maybe_reraise_from_exception():
+    err = ValueError()
+    try:
+        raise_group()
+    except ExceptionGroup as group1:
+        group2 = ExceptionGroup("E", [err], [""])
+        try:
+            group2.maybe_reraise()
+        except ValueError as caught_err:
+            assert caught_err.__cause__ is group1
+    try:
+        raise_group()
+    except ExceptionGroup as group1:
+        group2 = ExceptionGroup("E", [err], [""])
+        err2 = TypeError()
+        try:
+            group2.maybe_reraise(from_exception=err2)
+        except ValueError as caught_err:
+            assert caught_err.__cause__ is err2
 
 
 def test_exception_group_str():
